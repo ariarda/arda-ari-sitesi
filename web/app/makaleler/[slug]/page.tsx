@@ -21,14 +21,15 @@ async function getPost(slug: string) {
   return post;
 }
 
-// Props tipini bu şekilde dışarıda tanımlıyoruz
+// Props tipini Next.js 15'e uygun olarak güncelliyoruz.
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
-// Ve fonksiyon bu tipi kullanıyor
+// Fonksiyon artık params'ı "await" ile bekleyecek şekilde güncellendi.
 export default async function PostPage({ params }: Props) {
-  const post = await getPost(params.slug);
+  const { slug } = await params; // Gelen "Promise" içinden "slug" değerini alıyoruz.
+  const post = await getPost(slug); // Aldığımız slug ile veriyi çekiyoruz.
 
   if (!post) {
     return <div>Makale bulunamadı.</div>;
