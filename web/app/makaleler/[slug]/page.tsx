@@ -1,19 +1,17 @@
+// web/app/makaleler/[slug]/page.tsx
+
 import { client } from "@/sanity";
 import { PortableText } from '@portabletext/react';
 import Image from "next/image";
 import Link from 'next/link';
 
-export const revalidate = 60; // Her 60 saniyede bir yeniden kontrol et
+export const revalidate = 60;
 
-// ====================== ADIM 1: GÜNCELLENMİŞ VERİ ÇEKME FONKSİYONU ======================
-// Bu fonksiyon, hem ana makaleyi hem de ilgili diğer makaleleri tek seferde çeker.
 async function getPost(slug: string) {
   const query = `*[_type == "post" && slug.current == "${slug}"][0] {
-    ..., // Üç nokta, mevcut makalenin tüm alanlarını (title, body, vs.) getirir.
+    ...,
     "authorName": author->name,
     "categoryTitles": categories[]->title,
-    
-    // "ilgiliMakaleler" adında yeni bir alan oluşturuyoruz.
     "ilgiliMakaleler": *[_type == "post" && slug.current != "${slug}" && count(categories[@._ref in ^.^.categories[]._ref]) > 0] | order(publishedAt desc) [0...3] {
       title,
       "currentSlug": slug.current,
@@ -25,9 +23,14 @@ async function getPost(slug: string) {
   return post;
 }
 
-// Bu, /makaleler/[slug] URL'sinin sayfa bileşenidir.
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  // Yukarıdaki güncellenmiş fonksiyonu kullanarak veriyi çekiyoruz.
+// ====================== ÇÖZÜM BU KISIMDA ======================
+// Hatanın çözümü için sayfa props'larını bu şekilde net bir type ile tanımlıyoruz.
+type Props = {
+  params: { slug: string };
+};
+
+// Sayfa bileşenini bu yeni 'Props' tipiyle güncelliyoruz.
+export default async function PostPage({ params }: Props) {
   const post = await getPost(params.slug);
 
   if (!post) {
@@ -89,7 +92,6 @@ export default async function PostPage({ params }: { params: { slug: string } })
             
           </div>
 
-          {/* ====================== ADIM 2: İLGİLİ MAKALELER BÖLÜMÜNÜ EKLEME ====================== */}
           {post.ilgiliMakaleler && post.ilgiliMakaleler.length > 0 && (
             <div className="related-posts-section" style={{ marginTop: '80px', paddingTop: '60px', borderTop: '1px solid #eee', width: '100%' }}>
               <h2 className="section-title" style={{ textAlign: 'left', fontSize: '2.5rem', borderBottom: 'none', paddingBottom: 0 }}>Bunlar da İlginizi Çekebilir</h2>
