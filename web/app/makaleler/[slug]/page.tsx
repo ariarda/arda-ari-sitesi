@@ -1,5 +1,3 @@
-// web/app/makaleler/[slug]/page.tsx
-
 import { client } from "@/sanity";
 import { PortableText } from '@portabletext/react';
 import Image from "next/image";
@@ -23,13 +21,12 @@ async function getPost(slug: string) {
   return post;
 }
 
-// ====================== ÇÖZÜM BU KISIMDA ======================
-// Hatanın çözümü için sayfa props'larını bu şekilde net bir type ile tanımlıyoruz.
+// Props tipini bu şekilde dışarıda tanımlıyoruz
 type Props = {
   params: { slug: string };
 };
 
-// Sayfa bileşenini bu yeni 'Props' tipiyle güncelliyoruz.
+// Ve fonksiyon bu tipi kullanıyor
 export default async function PostPage({ params }: Props) {
   const post = await getPost(params.slug);
 
